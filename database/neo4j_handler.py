@@ -5,10 +5,7 @@ import os
 load_dotenv()
 
 class Neo4jHandler:
-    def __init__(self):
-        uri = os.getenv("NEO4J_URI")
-        user = os.getenv("NEO4J_USER")
-        password = os.getenv("NEO4J_PASSWORD")
+    def __init__(self, uri, user, password):
         self.driver = GraphDatabase.driver(uri, auth=(user, password))
 
     async def store(self, product_info):
@@ -18,9 +15,17 @@ class Neo4jHandler:
     @staticmethod
     def _create_and_return_product(tx, product_info):
         query = (
-            "CREATE (p:Product {title: $title, description: $description, price: $price, url: $url}) "
+            "MERGE (p:Product {url: $url}) "
+            "SET p.title = $title, "
+            "p.description = $description, "
+            "p.price_without_discount = $price_without_discount, "
+            "p.price = $price, "
+            "p.similar_purchases = $similar_purchases, "
+            "p.most_bought = $most_bought, "
+            "p.recommendations = $recommendations, "
+            "p.similar_products = $similar_products, "
+            "p.other_members_also_purchased = $other_members_also_purchased "
             "RETURN p"
         )
-        result = tx.run(query, title=product_info['title'], description=product_info['description'],
-                        price=product_info['price'], url=product_info['url'])
+        result = tx.run(query, **product_info)
         return result.single()[0]
