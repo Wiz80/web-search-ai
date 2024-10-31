@@ -8,4 +8,8 @@ __pycache__/
 
 *.pyc
 
-*.log   
+*.log  
+
+*.csv
+
+.DS_Store
